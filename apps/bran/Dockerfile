@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir poetry && \
     poetry config virtualenvs.in-project true
 
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --only main --no-interaction --no-ansi
 
 # Stage 2: Runtime
 FROM python:3.12-slim
