@@ -1,0 +1,24 @@
+replicaCount: 2
+
+image:
+  repository: hodr
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  port: 8888
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPU: 70
+  targetMemory: 80

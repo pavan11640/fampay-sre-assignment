@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hodr
+  namespace: fampay
+  labels:
+    app: hodr
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hodr
+  template:
+    metadata:
+      labels:
+        app: hodr
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8888"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+      containers:
+        - name: hodr
+          image: hodr:latest
+          ports:
+            - containerPort: 8888
+              protocol: TCP
+          env:
+            - name: HOST_ADDR
+              value: "0.0.0.0:8888"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8888
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8888
+            initialDelaySeconds: 3
+            periodSeconds: 5

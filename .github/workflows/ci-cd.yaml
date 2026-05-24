@@ -1,0 +1,94 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION: ap-south-1
+  EKS_CLUSTER: fampay-production
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com
+
+jobs:
+  build-hodr:
+    name: Build & Push Hodr
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Hodr image
+        run: |
+          IMAGE_TAG="${{ github.sha }}"
+          docker build -t $ECR_REGISTRY/fampay/hodr:$IMAGE_TAG -t $ECR_REGISTRY/fampay/hodr:latest ./apps/hodr
+          docker push $ECR_REGISTRY/fampay/hodr:$IMAGE_TAG
+          docker push $ECR_REGISTRY/fampay/hodr:latest
+
+  build-bran:
+    name: Build & Push Bran
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Bran image
+        run: |
+          IMAGE_TAG="${{ github.sha }}"
+          docker build -t $ECR_REGISTRY/fampay/bran:$IMAGE_TAG -t $ECR_REGISTRY/fampay/bran:latest ./apps/bran
+          docker push $ECR_REGISTRY/fampay/bran:$IMAGE_TAG
+          docker push $ECR_REGISTRY/fampay/bran:latest
+
+  deploy:
+    name: Deploy to EKS
+    runs-on: ubuntu-latest
+    needs: [build-hodr, build-bran]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.13.0
+
+      - name: Deploy with Helm
+        run: |
+          IMAGE_TAG="${{ github.sha }}"
+          helm upgrade --install fampay ./helm/fampay \
+            --namespace fampay \
+            --create-namespace \
+            --set hodr.image.repository=$ECR_REGISTRY/fampay/hodr \
+            --set hodr.image.tag=$IMAGE_TAG \
+            --set bran.image.repository=$ECR_REGISTRY/fampay/bran \
+            --set bran.image.tag=$IMAGE_TAG \
+            --wait --timeout 300s

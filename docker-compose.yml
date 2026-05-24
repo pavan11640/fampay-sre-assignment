@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - hodr
+      - bran
+    networks:
+      - frontend
+
+  hodr:
+    build:
+      context: ./apps/hodr
+      dockerfile: Dockerfile
+    environment:
+      - HOST_ADDR=0.0.0.0:8888
+    expose:
+      - "8888"
+    networks:
+      - frontend
+
+  bran:
+    build:
+      context: ./apps/bran
+      dockerfile: Dockerfile
+    environment:
+      - SECRET_KEY=production-secret-change-me
+      - ALLOWED_HOSTS=*
+      - DEBUG=false
+    expose:
+      - "8000"
+    networks:
+      - frontend
+      - backend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge

@@ -1,0 +1,47 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-bran-ingress
+  namespace: fampay
+spec:
+  podSelector:
+    matchLabels:
+      app: bran
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from ingress controller only
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 8000
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow bran to reach hodr
+    - to:
+        - podSelector:
+            matchLabels:
+              app: hodr
+      ports:
+        - port: 8888
+    # Allow external DB connections
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 5432
+          protocol: TCP

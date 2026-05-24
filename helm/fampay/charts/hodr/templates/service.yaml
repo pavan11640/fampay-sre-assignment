@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-hodr
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: hodr
+spec:
+  type: ClusterIP
+  selector:
+    app: hodr
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      protocol: TCP

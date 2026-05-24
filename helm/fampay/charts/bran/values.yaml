@@ -1,0 +1,33 @@
+replicaCount: 2
+
+image:
+  repository: bran
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  port: 8000
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPU: 70
+  targetMemory: 80
+
+config:
+  ALLOWED_HOSTS: "*"
+  DEBUG: "false"
+  TIME_ZONE: "UTC"
+
+secrets:
+  SECRET_KEY: "change-me-in-production"
+  DATABASE_URL: "sqlite:///app/db.sqlite3"

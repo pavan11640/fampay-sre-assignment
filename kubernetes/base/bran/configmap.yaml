@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bran-config
+  namespace: fampay
+data:
+  ALLOWED_HOSTS: "*"
+  DEBUG: "false"
+  TIME_ZONE: "UTC"

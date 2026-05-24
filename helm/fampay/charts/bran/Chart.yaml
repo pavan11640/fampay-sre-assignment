@@ -1,0 +1,5 @@
+apiVersion: v2
+name: bran
+description: Bran - Django REST service
+version: 1.0.0
+appVersion: "1.0.0"

@@ -1,0 +1,61 @@
+global:
+  namespace: fampay
+  imageRegistry: ""
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+
+hodr:
+  replicaCount: 2
+  image:
+    repository: hodr
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 8888
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPU: 70
+    targetMemory: 80
+
+bran:
+  replicaCount: 2
+  image:
+    repository: bran
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 8000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPU: 70
+    targetMemory: 80
+  config:
+    ALLOWED_HOSTS: "*"
+    DEBUG: "false"
+    TIME_ZONE: "UTC"
+  secrets:
+    SECRET_KEY: "change-me-in-production"
+    DATABASE_URL: "sqlite:///app/db.sqlite3"

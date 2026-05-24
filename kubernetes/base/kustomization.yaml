@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fampay
+
+resources:
+  - namespace.yaml
+  # Hodr
+  - hodr/deployment.yaml
+  - hodr/service.yaml
+  - hodr/hpa.yaml
+  # Bran
+  - bran/deployment.yaml
+  - bran/service.yaml
+  - bran/configmap.yaml
+  - bran/secret.yaml
+  - bran/hpa.yaml
+  # Ingress
+  - ingress/ingress.yaml
+  # Network Policies
+  - network-policies/default-deny.yaml
+  - network-policies/allow-hodr.yaml
+  - network-policies/allow-bran.yaml
