@@ -39,15 +39,15 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           livenessProbe:
             httpGet:
-              path: /bran/
+              path: /metrics
               port: {{ .Values.service.port }}
-            initialDelaySeconds: 10
-            periodSeconds: 15
-            timeoutSeconds: 10
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: /bran/
+              path: /metrics
               port: {{ .Values.service.port }}
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            timeoutSeconds: 10
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
