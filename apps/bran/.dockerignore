@@ -1,0 +1,15 @@
+.git
+.gitignore
+README.md
+LICENSE
+env.example
+__pycache__
+*.pyc
+*.pyo
+.venv
+.env
+.pytest_cache
+.coverage
+htmlcov
+*.egg-info
+db.sqlite3

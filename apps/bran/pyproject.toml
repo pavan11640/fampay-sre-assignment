@@ -1,0 +1,90 @@
+[tool.poetry]
+name = "bran"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+Django = "^5.0.1"
+djangorestframework = "^3.14.0"
+celery = {version = "^5.2.7", extras = ["redis", "eventlet"]}
+redis = {version = "^4.5.1", extras = ["hiredis"]}
+dj-database-url = "^2.1.0"
+python-dotenv = "^1.0.1"
+django-prometheus = "^2.3.1"
+gunicorn = "^21.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dev-dependencies]
+django-debug-toolbar = "2.0"
+black = "^22.3.0"
+ruff = "^0.1.14"
+pytest = "^7.2.1"
+pytest-django = "^4.5.2"
+pytest-cov = "^3.0.0"
+
+
+[tool.black]
+line-length = 88
+target_version = ['py37']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | (migrations|protobuf)\.*
+
+  # The following are specific to Black, you probably don't want those.
+  | blib2to3just
+  | tests/data
+)/
+'''
+
+
+[tool.pytest.ini_options]
+python_classes = "NoThanks"
+addopts = "-p no:warnings --color=yes --reuse-db -n auto"
+norecursedirs = ["*.egg-info", ".git", "static", ".cache"]
+DJANGO_SETTINGS_MODULE = "westeros.settings"
+python_files = ["test_*.py", "tests.py", "*_test.py", "tests/*.py"]
+
+# Error code guide https://pypi.org/project/ruff/0.0.105/
+# Config guide https://beta.ruff.rs/docs/settings
+[tool.ruff]
+exclude = [
+    ".git",
+    "*migrations*",
+    "manage.py",
+    "*protobuf*"
+]
+ignore = [
+    "E501",
+    "E731",
+    "F401",
+    "F403",
+    "F841",
+    "E713"
+]
+line-length = 88
+select = [
+    "E",
+    "F",
+    "W",
+    "I"
+]
+target-version = "py38"
+show-fixes = true
+
+
