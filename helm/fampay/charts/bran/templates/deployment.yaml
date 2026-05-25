@@ -23,6 +23,7 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000
         runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: bran
           image: "{{ .Values.global.imageRegistry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -35,6 +36,12 @@ spec:
                 name: {{ .Release.Name }}-bran-config
             - secretRef:
                 name: {{ .Release.Name }}-bran-secrets
+          env:
+            - name: DATABASE_URL
+              value: "sqlite:///app/db/db.sqlite3"
+          volumeMounts:
+            - name: db-data
+              mountPath: /app/db
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           livenessProbe:
@@ -51,3 +58,21 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
+      initContainers:
+        - name: migrate
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["python", "manage.py", "migrate", "--noinput"]
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-bran-config
+            - secretRef:
+                name: {{ .Release.Name }}-bran-secrets
+          env:
+            - name: DATABASE_URL
+              value: "sqlite:///app/db/db.sqlite3"
+          volumeMounts:
+            - name: db-data
+              mountPath: /app/db
+      volumes:
+        - name: db-data
+          emptyDir: {}

@@ -14,9 +14,12 @@ import os
 from pathlib import Path
 
 import dj_database_url
-from dotenv import load_dotenv
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -143,9 +146,5 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_FILTER_BACKENDS": (),
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
-    "DEFAULT_PAGINATION_CLASS": "hello.pagination.CursorPagination",
-    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
     "PAGE_SIZE": 10,
-    "DATE_FORMAT": "%d/%m/%Y",
-    "DATE_INPUT_FORMATS": ["%d/%m/%Y"],
 }
