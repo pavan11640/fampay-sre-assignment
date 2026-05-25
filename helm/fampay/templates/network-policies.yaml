@@ -1,17 +1,6 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: default-deny-all
-  namespace: {{ .Values.global.namespace }}
-spec:
-  podSelector: {}
-  policyTypes:
-    - Ingress
-    - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
   name: allow-hodr-ingress
   namespace: {{ .Values.global.namespace }}
 spec:
@@ -20,7 +9,6 @@ spec:
       app: hodr
   policyTypes:
     - Ingress
-    - Egress
   ingress:
     - from:
         - namespaceSelector:
@@ -34,19 +22,11 @@ spec:
               app: bran
       ports:
         - port: {{ .Values.hodr.service.port }}
-  egress:
-    - to:
-        - namespaceSelector: {}
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
-          protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-bran-ingress
+  name: deny-hodr-to-bran
   namespace: {{ .Values.global.namespace }}
 spec:
   podSelector:
@@ -54,7 +34,6 @@ spec:
       app: bran
   policyTypes:
     - Ingress
-    - Egress
   ingress:
     - from:
         - namespaceSelector:
@@ -62,27 +41,9 @@ spec:
               kubernetes.io/metadata.name: ingress-nginx
       ports:
         - port: {{ .Values.bran.service.port }}
-  egress:
-    - to:
-        - namespaceSelector: {}
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
-          protocol: TCP
-    - to:
+    - from:
         - podSelector:
             matchLabels:
-              app: hodr
+              app: bran
       ports:
-        - port: {{ .Values.hodr.service.port }}
-    - to:
-        - ipBlock:
-            cidr: 0.0.0.0/0
-            except:
-              - 10.0.0.0/8
-              - 172.16.0.0/12
-              - 192.168.0.0/16
-      ports:
-        - port: 5432
-          protocol: TCP
+        - port: {{ .Values.bran.service.port }}
